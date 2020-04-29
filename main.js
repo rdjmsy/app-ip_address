@@ -11,17 +11,15 @@ const IPCIDR = require('ip-cidr');
  * @param {string} cidrStr - The IPv4 subnet expressed
  *                 in CIDR format.
  * @param {callback} callback - A callback function.
- * @return {string} (firstIpAddress[myipv4]) - An IPv4 address.
- * @return {string} (firstIPAddress[myipv6]) - An IPv4 Address mapped as an IPv6 address.
+ * @return {string} (firstIpAddress) - An IPv4 address.
+ * @return {string} (IPv6Address) - An IPv4 Address mapped as an IPv6 address.
  */
 function getFirstIpAddress(cidrStr, callback) {
 
   // Initialize return arguments for callback
-  let firstIpAddress = [null, null];
+  let firstIpAddress = null;
   let callbackError = null;
-  let myipv4 = null;
-  let myipv6 = null;
-
+  
   // Instantiate an object from the imported class and assign the instance to variable cidr.
   const cidr = new IPCIDR(cidrStr);
   // Initialize options for the toArray() method.
@@ -38,17 +36,16 @@ function getFirstIpAddress(cidrStr, callback) {
     callbackError = 'Error: Invalid CIDR passed to getFirstIpAddress.';
   } else {
     // If the passed CIDR is valid, call the object's toArray() method.
-    // Retrieve and IPv6 mapped, formatted string by calling the getIpv4MappedIpv6Address() method.
     // Notice the destructering assignment syntax to get the value of the first array's element.
-    let myipv4 = cidr.toArray(options);
-    let myipv6 = getIpv4MappedIpv6Address(myipv4[0]);
-    firstIpAddress = [myipv4, myipv6];
+    // Then retrieve an IPv6 mapped, IPv4 string by calling the getIpv4MappedIpv6Address() method.
+    [firstIpAddress] = cidr.toArray(options);
+    IPv6Address = getIpv4MappedIpv6Address(firstIpAddress);
   }
   // Call the passed callback function.
   // Node.js convention is to pass error data as the first argument to a callback.
   // The IAP convention is to pass returned data as the first argument and error
   // data as the second argument to the callback function.
-  return callback(firstIpAddress, callbackError);
+  return callback({ipv4: firstIpAddress, ipv6: IPv6Address}, callbackError);
 }
 
 
@@ -125,7 +122,7 @@ function main() {
       if (error) {
         console.error(`  Error returned from GET request: ${error}`);
       }
-      console.log(`  Response returned from GET request: ${data}`);
+      console.log(`  Response returned from GET request: ${JSON.stringify(data)}`);
     });
   }
   // Iterate over sampleIpv4s and pass the element's value to getIpv4MappedIpv6Address().
