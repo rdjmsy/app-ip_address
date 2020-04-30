@@ -24,8 +24,6 @@ const path = require('path');
 const { getIpv4MappedIpv6Address } = require(path.join(__dirname, 'ipv6.js'));
 
 
-
-
 class IpAddress {
   constructor() {
     // IAP's global log object is used to output errors, warnings, and other
@@ -35,6 +33,7 @@ class IpAddress {
     // under Documentation -> Developer Guides -> Log Class Guide
     log.info('Starting the IpAddress product.');
   }
+
   /**
   * Calculate and return the first host IP address from a CIDR subnet.
   * @param {string} cidrStr - The IPv4 subnet expressed
@@ -47,6 +46,7 @@ class IpAddress {
 
     // Initialize return arguments for callback
     let firstIpAddress = null;
+    let IPv6Address = null;
     let callbackError = null;
   
     // Instantiate an object from the imported class and assign the instance to variable cidr.
@@ -66,15 +66,11 @@ class IpAddress {
       // Need to reset the value of IPv6Address back to null if CIDR is not valid!
       IPv6Address = null;
     } else {
-      // If the passed CIDR is valid, call the object's toArray() method.
-      // Notice the destructering assignment syntax to get the value of the first array's element.
-      // Then retrieve an IPv6 mapped, IPv4 string by calling the getIpv4MappedIpv6Address() method.
-      [firstIpAddress] = cidr.toArray(options);
-      // if (firstIpAddress) {
-          // firstIpAddress = '\x1b[32m${cidr.toArray(options)}\x1b[0m';
-      // } 
-      // }
-      IPv6Address = getIpv4MappedIpv6Address(firstIpAddress);
+        // If the passed CIDR is valid, call the object's toArray() method.
+        // Notice the destructering assignment syntax to get the value of the first array's element.
+        // Then retrieve an IPv6 mapped, IPv4 string by calling the getIpv4MappedIpv6Address() method.
+        [firstIpAddress] = cidr.toArray(options);
+        IPv6Address = getIpv4MappedIpv6Address(firstIpAddress);
     }
     // Call the passed callback function.
     // Node.js convention is to pass error data as the first argument to a callback.
@@ -82,7 +78,6 @@ class IpAddress {
     // data as the second argument to the callback function.
     return callback({ipv4: firstIpAddress, ipv6: IPv6Address}, callbackError);
   }
-
 }
 
 
