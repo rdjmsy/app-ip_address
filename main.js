@@ -39,14 +39,18 @@ class IpAddress {
   * @param {string} cidrStr - The IPv4 subnet expressed
   *                 in CIDR format.
   * @param {callback} callback - A callback function.
-  * @return {string} (firstIpAddress) - An IPv4 address.
-  * @return {string} (IPv6Address) - An IPv4 Address mapped as an IPv6 address.
+  * @return {object} (firstIpAddress) - An object with two properties, ipv4 and ipv6,  
+  *                 whose values are strings.  The ipv4 property will hold a four decimal
+  *                 octets, dotted IPv4 address, e.g. 172.16.4.33.  The ipv6 propterty 
+  *                 will hold an IPv6 address, e.g. 0:0:0:0:0:ffff:ac10:0421.       
   */
   getFirstIpAddress(cidrStr, callback) {
 
-    // Initialize return arguments for callback
-    let firstIpAddress = null;
-    let IPv6Address = null;
+    // Initialize return arguments for firstIpAddress object and callback
+    let firstIpAddress = {
+        ipv4: null,
+        ipv6: null
+    };
     let callbackError = null;
   
     // Instantiate an object from the imported class and assign the instance to variable cidr.
@@ -63,20 +67,18 @@ class IpAddress {
     if (!cidr.isValid()) {
       // If the passed CIDR is invalid, set an error message.
       callbackError = 'Error: Invalid CIDR passed to getFirstIpAddress.';
-      // Need to reset the value of IPv6Address back to null if CIDR is not valid!
-      IPv6Address = null;
     } else {
         // If the passed CIDR is valid, call the object's toArray() method.
-        // Notice the destructering assignment syntax to get the value of the first array's element.
+        // Notice the destructuring assignment syntax to get the value of the first array's element.
         // Then retrieve an IPv6 mapped, IPv4 string by calling the getIpv4MappedIpv6Address() method.
-        [firstIpAddress] = cidr.toArray(options);
-        IPv6Address = getIpv4MappedIpv6Address(firstIpAddress);
+        [firstIpAddress.ipv4] = cidr.toArray(options);
+        firstIpAddress.ipv6 = getIpv4MappedIpv6Address(firstIpAddress.ipv4);
     }
     // Call the passed callback function.
     // Node.js convention is to pass error data as the first argument to a callback.
     // The IAP convention is to pass returned data as the first argument and error
     // data as the second argument to the callback function.
-    return callback({ipv4: firstIpAddress, ipv6: IPv6Address}, callbackError);
+    return callback(firstIpAddress, callbackError);
   }
 }
 
